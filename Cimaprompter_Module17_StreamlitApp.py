@@ -35,11 +35,20 @@ from rag_system import RAGSystem, initialize_rag_system
 # ============================================================================
 
 def _get_api_key() -> str:
-    """Return GOOGLE_API_KEY from Streamlit secrets (cloud) or env var (local)."""
+    """Return GOOGLE_API_KEY from Streamlit secrets, env var, or user sidebar input."""
+    # 1. Streamlit Cloud secrets (highest priority)
     try:
-        return st.secrets["GOOGLE_API_KEY"]
+        key = st.secrets["GOOGLE_API_KEY"]
+        if key:
+            return key
     except Exception:
-        return os.getenv("GOOGLE_API_KEY", "")
+        pass
+    # 2. Environment variable (.env local)
+    key = os.getenv("GOOGLE_API_KEY", "")
+    if key:
+        return key
+    # 3. User-provided via sidebar input
+    return st.session_state.get("user_api_key", "")
 
 # ============================================================================
 # PAGE CONFIGURATION (Must be first Streamlit command)
@@ -198,6 +207,10 @@ def initialize_session_state():
             'max_tokens': 500,
             'system_prompt': DEFAULT_SYSTEM_PROMPT
         }
+
+    # User-provided API key (fallback when not in secrets/env)
+    if 'user_api_key' not in st.session_state:
+        st.session_state.user_api_key = ""
 
     # Current explanation
     if 'current_explanation' not in st.session_state:
@@ -1101,6 +1114,35 @@ def main():
         st.title("🎓 Cimaprompter")
         st.markdown("*Trustworthy AI Explainer*")
         st.markdown("---")
+
+        # API Key input (only shown when not set via secrets or env var)
+        _key_from_system = ""
+        try:
+            _key_from_system = st.secrets.get("GOOGLE_API_KEY", "")
+        except Exception:
+            pass
+        if not _key_from_system:
+            _key_from_system = os.getenv("GOOGLE_API_KEY", "")
+
+        if not _key_from_system:
+            st.markdown("### 🔑 API Key")
+            user_key = st.text_input(
+                "Google API Key",
+                value=st.session_state.user_api_key,
+                type="password",
+                placeholder="AIza...",
+                help="Obtén tu key en https://aistudio.google.com/app/apikey"
+            )
+            if user_key != st.session_state.user_api_key:
+                st.session_state.user_api_key = user_key
+                # Clear cached resources so they reload with the new key
+                st.cache_resource.clear()
+                st.rerun()
+            if st.session_state.user_api_key:
+                st.success("✅ API Key ingresada")
+            else:
+                st.warning("⚠️ Ingresa tu Google API Key para usar la app")
+            st.divider()
 
         page = st.radio(
             "Navegación",
