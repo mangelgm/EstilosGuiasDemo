@@ -1,0 +1,40 @@
+# Cimaprompter Module 15: Trustworthy AI Explainer Dashboard
+# Requirements for Gradio and Streamlit applications with Google Gemini
+
+# UI Frameworks
+gradio>=4.0.0
+streamlit>=1.28.0
+
+# Data handling (pinned for SHAP/LIME compatibility)
+pandas<3.0.0
+numpy<2.0.0
+
+# LLM Integration - Google Gemini ONLY (per CLAUDE.md requirements)
+langchain==0.3.0
+langchain-community==0.3.0
+langchain-core==0.3.0
+langchain-google-genai
+google-generativeai
+
+# Embeddings (for similarity/hallucination detection)
+sentence-transformers
+
+# Explainability
+shap
+lime
+scikit-learn>=1.3.0
+
+# Visualization
+plotly
+matplotlib>=3.7.0
+
+# Utilities
+python-dotenv
+
+# RAG System (Module 16)
+chromadb>=0.4.0
+langchain-chroma
+pypdf
+
+# Note: OpenAI and other LLM providers are NOT used in this project.
+# This project uses Google Gemini exclusively as per team requirements.
